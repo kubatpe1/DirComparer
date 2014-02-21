@@ -15,6 +15,24 @@
 #define STACKSIZE 25
 #define THREADCOUNT 4
 
+/* Test section!!! TODO: DELETE THIS */
+
+void
+test()
+{
+	int i, j;
+	char *data;
+	for (j = 0; j < 100; j++) {
+		data = calloc(sizeof (char) * 15, 0);
+		sprintf(data, "%d", j);
+		produce(data);
+	}
+	produce(NULL);
+}
+
+/* End of test section!!! TODO: DELETE THIS */
+
+/*
 void
 search(char *start)
 {
@@ -80,6 +98,7 @@ search(char *start)
 
 	stack_delete(&st);
 }
+*/
 
 /*
 void
@@ -116,13 +135,29 @@ parent(int in)
 }
 */
 
+void
+*start(void *arg)
+{
+	char *msg;
+	int n = (int)arg;
+	
+	printf("Thread %d spawned!", n);
+
+	while ((msg = consume()) != NULL) {
+		printf("%d : %s\n", n, msg);
+		sleep(1);
+	}
+
+	return NULL;
+}
+
 void 
 spawn_threads(int n, pthread_t *buffer)
 {
 	int i, e;
 	
-	for (i == 0; i < n; i++) {
-		if ((e = pthread_create(buffer + i, NULL, start, NULL)) != 0) {
+	for (i = 0; i < n; i++) {
+		if ((e = pthread_create(buffer + i, NULL, start, (void*)i)) != 0) {
 			fprintf(stderr, "Error creating thread!\n");
 			exit(1);
 		}
@@ -132,8 +167,15 @@ spawn_threads(int n, pthread_t *buffer)
 int 
 main(int argc, char **argv)
 {
+	int n = 5;
+	pthread_t *buffer = malloc(sizeof (pthread_t) * n);
+	init_queue();
+	spawn_threads(n, buffer);
+	test();
+	return (0);
+
+	/*
 	int pid, status, threadn;
-	int pipes[2];
 	pthread_t *threads;
 
 
@@ -142,7 +184,7 @@ main(int argc, char **argv)
 		return (1);
 	}
 	
-	/* Queue initialization */
+	* Queue initialization *
 	init_queue();
 
 	threadn = THREADCOUNT;
@@ -150,10 +192,12 @@ main(int argc, char **argv)
 	
 	spawn_threads(threadn, threads);
 	
-	/* USEFUL CODE HERE! */
+	* USEFUL CODE HERE! *
 
 	
 	
 	free(threads);
 	return (0);
+
+	*/
 }

@@ -1,5 +1,5 @@
 #include <err.h>
-#include <pthread>
+#include <pthread.h>
 
 #define QUEUE_MAX 25
 
@@ -15,6 +15,6 @@ void init_queue();
 /* Cleans up the queue */
 void delete_queue();
 /* Adds one item into the queue (and wakes sleeping consumers) */
-int produce(void *item);
+void produce(void *item);
 /* Takes one item from the queue (and wakes sleeping producers */
 void *consume();
