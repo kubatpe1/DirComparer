@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "stringstack.h"
 
-#define STEP 4
+#define STEP 15
 
 
 void

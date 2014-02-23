@@ -15,8 +15,11 @@
 #define STACKSIZE 25
 #define THREADCOUNT 4
 
+struct queue q;
+
 /* Test section!!! TODO: DELETE THIS */
 
+/*
 void
 test()
 {
@@ -29,12 +32,12 @@ test()
 	}
 	produce(NULL);
 }
+ */
 
 /* End of test section!!! TODO: DELETE THIS */
 
-/*
 void
-search(char *start)
+search(char *start, struct queue *q)
 {
 	struct stack st;
 	DIR *d;
@@ -80,14 +83,12 @@ search(char *start)
 			}
 			
 			if (S_ISREG(buf.st_mode)) {
-
+				produce(q, path);
 			}
-			free(path);
 		}
 
 		if (closedir(d) == -1) {
 			fprintf(stderr, "Error closing the directory!\n");
-			close(out);
 			exit(1);
 		}
 		
@@ -97,8 +98,9 @@ search(char *start)
 	}
 
 	stack_delete(&st);
+	
+	sleep(5);
 }
-*/
 
 /*
 void
@@ -143,7 +145,7 @@ void
 	
 	printf("Thread %d spawned!", n);
 
-	while ((msg = consume()) != NULL) {
+	while ((msg = consume(&q)) != NULL) {
 		printf("%d : %s\n", n, msg);
 		sleep(1);
 	}
@@ -169,9 +171,9 @@ main(int argc, char **argv)
 {
 	int n = 5;
 	pthread_t *buffer = malloc(sizeof (pthread_t) * n);
-	init_queue();
+	init_queue(&q);
 	spawn_threads(n, buffer);
-	test();
+	search("../..", &q);
 	return (0);
 
 	/*

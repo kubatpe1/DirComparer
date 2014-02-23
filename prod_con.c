@@ -2,78 +2,72 @@
 #include "pthread_wrapper.h"
 
 void
-init_queue()
+init_queue(struct queue *q)
 {
-	start_pos = 0;
-	queue_size = 0;
-	mutex_init(&m);
-	cond_init(&c_prod);
-	cond_init(&c_cons);	
+	q->start_pos = 0;
+	q->queue_size = 0;
+	mutex_init(&(q->m));
+	cond_init(&(q->c_prod));
+	cond_init(&(q->c_cons));
 }
 
 void
-reset_queue()
+delete_queue(struct queue *q)
 {
-    
+	mutex_destroy(&(q->m));
+	cond_destroy(&(q->c_prod));
+	cond_destroy(&(q->c_cons));
 }
 
 void
-delete_queue()
-{
-	mutex_destroy(&m);
-	cond_destroy(&c_prod);
-	cond_destroy(&c_cons);
-}
-
-void
-produce(void *item)
+produce(struct queue *q, void *item)
 {
 	/* Lock */
-	lock(&m);
+	lock(&(q->m));
 
 	/* Queue is full */
-	while (queue_size == QUEUE_MAX) {
+	while (q->queue_size == QUEUE_MAX) {
 		/* Conditional wait */
-		wait(&c_prod, &m);
+		wait(&(q->c_prod), &(q->m));
 	}
 	
 	/* Add the item to the queue */
-	queue[(start_pos + queue_size) % QUEUE_MAX] = item;
-	queue_size++;
+	q->data[(q->start_pos + q->queue_size) % QUEUE_MAX] = item;
+	q->queue_size++;
 	
-	signal(&c_cons);
+	signal(&(q->c_cons));
 
-	unlock(&m);
+	unlock(&(q->m));
 }
 
 void
-*consume()
+*consume(struct queue *q)
 {
 	void *result;
 
 	/* Lock */
-	lock(&m);
+	lock(&(q->m));
 
 	/* Queue is empty */
-	while (queue_size <= 0) {
-		wait(&c_cons, &m);
+	while (q->queue_size <= 0) {
+		wait(&(q->c_cons), &(q->m));
 	}
 
 	/* Fetch the item from the queue */
-	result = queue[start_pos % QUEUE_MAX];
+	result = q->data[q->start_pos % QUEUE_MAX];
 
 	/* NULL pointer in the queue means termination, we keep it in there */
 	if (result != NULL) {
 		/* Change the start and size of the queue */
-		start_pos = (start_pos + 1) % QUEUE_MAX;
+		q->start_pos = (q->start_pos + 1) % QUEUE_MAX;
 
-		queue_size--;
+		q->queue_size--;
 		
 		/* Wake up the producer, there is free space */
-		signal(&c_prod);
+		signal(&(q->c_prod));
 	}
 
-	unlock(&m);
+	unlock(&(q->m));
 
 	return (result);
 }

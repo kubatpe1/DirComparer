@@ -1,3 +1,5 @@
+#ifndef STRINGSTACK_H
+#define STRINGSTACK_H
 
 struct stack {
 	char **data;
@@ -12,3 +14,5 @@ void stack_push(struct stack *stack, char *item);
 char *stack_pop(struct stack *stack);
 
 void stack_delete(struct stack *stack);
+
+#endif /* STRINGSTACK_H */
