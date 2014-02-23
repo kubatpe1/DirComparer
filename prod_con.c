@@ -4,12 +4,17 @@
 void
 init_queue()
 {
-	int e;
 	start_pos = 0;
 	queue_size = 0;
 	mutex_init(&m);
 	cond_init(&c_prod);
 	cond_init(&c_cons);	
+}
+
+void
+reset_queue()
+{
+    
 }
 
 void

@@ -12,6 +12,8 @@ pthread_cond_t c_cons;
 
 /* Initializes the queue, mutex and cond. variable */
 void init_queue();
+/* Resets the queue state (and deletes its content) */
+void reset_queue();
 /* Cleans up the queue */
 void delete_queue();
 /* Adds one item into the queue (and wakes sleeping consumers) */
