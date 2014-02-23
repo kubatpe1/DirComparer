@@ -10,6 +10,6 @@ void *start(void *arg);
 int match_content(char *first, char *second);
 
 /* Copies the source file to destination, overwrites if already exists */
-void copy(char *source, char *destination);
+int copy(char *source, char *destination);
 
 #endif /* THREAD_H */

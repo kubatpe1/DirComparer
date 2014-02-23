@@ -177,6 +177,7 @@ main(int argc, char **argv)
 {
 	int res1 = match_content("main.c", "main2.x");
 	int res2 = match_content("main.c", "search.c");
+	copy("main.c", "main3.z");
 	
 	printf("%d, %d\n", res1, res2);
 	
