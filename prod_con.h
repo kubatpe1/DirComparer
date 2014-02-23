@@ -6,6 +6,8 @@
 
 #define QUEUE_MAX 25
 
+/* Structure for storing the producer-consumer queue data and locks */
+/* Size fixed by QUEUE_MAX constant */
 struct queue {
 	void *data[QUEUE_MAX];
 	int start_pos;
@@ -14,8 +16,6 @@ struct queue {
 	pthread_cond_t c_prod;
 	pthread_cond_t c_cons;
 };
-
-
 
 /* Initializes the queue, mutex and cond. variable */
 void init_queue(struct queue *q);

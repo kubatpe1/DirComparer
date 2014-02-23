@@ -5,7 +5,6 @@
 
 #define STEP 15
 
-
 void
 stack_init(struct stack *stack, int start_size) 
 {

@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <inttypes.h>
 #include <pthread.h>
+
 #include "stringstack.h"
 #include "thread.h"
 #include "prod_con.h"
@@ -36,6 +37,7 @@ test()
 
 /* End of test section!!! TODO: DELETE THIS */
 
+/*
 void
 search(char *start, struct queue *q)
 {
@@ -101,6 +103,7 @@ search(char *start, struct queue *q)
 	
 	sleep(5);
 }
+ */
 
 /*
 void
@@ -137,6 +140,7 @@ parent(int in)
 }
 */
 
+/*
 void
 *start(void *arg)
 {
@@ -152,6 +156,8 @@ void
 
 	return NULL;
 }
+ */
+
 
 void 
 spawn_threads(int n, pthread_t *buffer)
@@ -169,6 +175,13 @@ spawn_threads(int n, pthread_t *buffer)
 int 
 main(int argc, char **argv)
 {
+	int res1 = match_content("main.c", "main2.x");
+	int res2 = match_content("main.c", "search.c");
+	
+	printf("%d, %d\n", res1, res2);
+	
+	return (0);
+	
 	int n = 5;
 	pthread_t *buffer = malloc(sizeof (pthread_t) * n);
 	init_queue(&q);
