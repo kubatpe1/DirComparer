@@ -197,10 +197,12 @@ main(int argc, char **argv)
 	
 	int sync = 0;
 	
-	char *src = "F6";
-	char *dst = "F7";
+	int with_content = 1;
 	
-	res1 = search(src, dst, 1, sync, 8);
+	char *src = "F3";
+	char *dst = "F4";
+	
+	res1 = search(src, dst, with_content, sync, 8);
 	res2 = search(dst, src, 0, sync, 8);
 	
 	res = res1 || res2;

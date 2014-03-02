@@ -38,7 +38,7 @@ compare_files(struct search_context *context, char *file)
 	/* 0 = files are similar, 1 = files are different or the other one doesn't exist */
 	int different = 0;
 	
-	/* 0 = file won't be copied, 1 = file will be copied (replacing original one) */
+	/* 0 = file won't be copied, 1 = file will be copied (replacing original one) 2 = file will be copied the other way */
 	int sync = 0;
 	
 	/* Structures for information about both files */
@@ -72,6 +72,9 @@ compare_files(struct search_context *context, char *file)
 		/* Change date check */
 		if (first_stat.st_mtime > second_stat.st_mtime) {
 			sync = 1;
+		}
+		else {
+			sync = 2;
 		}
 		
 		/* 2. Size */
@@ -114,9 +117,20 @@ compare_files(struct search_context *context, char *file)
 	
 finish:
 	/* Optional - copy */
-	if (different && sync && context->sync) {
-		if (copy(first, second) == -1) {
-			printf("File %s can't be copied to destination %s.\n", first, second);
+	if (different && context->sync) {
+		if (sync == 1) {
+			if (copy(first, second) == -1) {
+				lock(&(context->output_lock));
+				printf("File %s can't be copied to destination %s.\n", first, second);
+				unlock(&(context->output_lock));
+			}
+		}
+		else if (sync == 2) {
+			if (copy(second, first) == -1) {
+				lock(&(context->output_lock));
+				printf("File %s can't be copied to destination %s.\n", second, first);
+				unlock(&(context->output_lock));
+			}
 		}
 	}
 	
