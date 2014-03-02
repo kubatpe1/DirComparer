@@ -80,8 +80,8 @@ compare_files(struct search_context *context, char *file)
 			different = 1;
 			lock(&(context->output_lock));
 			printf("Files have different size:\n");
-			printf("%s - %llu\n", first, (unsigned long long)first_stat.st_size);
-			printf("%s - %llu\n", second, (unsigned long long)second_stat.st_size);
+			printf("%s - %lu\n", first, (unsigned long)first_stat.st_size);
+			printf("%s - %lu\n", second, (unsigned long)second_stat.st_size);
 			unlock(&(context->output_lock));
 			goto finish;
 		}
