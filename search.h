@@ -11,9 +11,6 @@
 /* Mask for directory creation */
 #define DIRMASK 0777
 
-/* Global lock for console output */
-pthread_mutex_t console_lock = PTHREAD_MUTEX_INITIALIZER;
-
 /* Structure defining search context and parameters */
 struct search_context {
 	struct queue q;
@@ -21,6 +18,7 @@ struct search_context {
 	char *target;
 	int with_content;
 	int sync;
+	pthread_mutex_t output_lock;
 };
 
 /* Performs the search with specified parameters */

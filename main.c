@@ -9,6 +9,7 @@
 #include <inttypes.h>
 #include <pthread.h>
 
+#include "search.h"
 #include "stringstack.h"
 #include "thread.h"
 #include "prod_con.h"
@@ -16,7 +17,6 @@
 #define STACKSIZE 25
 #define THREADCOUNT 4
 
-struct queue q;
 
 /* Test section!!! TODO: DELETE THIS */
 
@@ -193,7 +193,7 @@ main(int argc, char **argv)
 	return (0);
 	 */
 	
-	
+	search("F1", "F4", 1, 1, 8);
 	
 	return (0);
 

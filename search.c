@@ -4,10 +4,13 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 
-#include "search.h"
 #include "thread.h"
+#include "search.h"
 #include "stringstack.h"
+#include "pthread_wrapper.h"
+#include "prod_con.h"
 
 int
 search(char *src, char *dst, int with_content, int sync, int thread_num)
@@ -24,16 +27,26 @@ search(char *src, char *dst, int with_content, int sync, int thread_num)
 	context.target = dst;
 	context.with_content = with_content;
 	context.sync = sync;
+	init_queue(&(context.q));
+	mutex_init(&(context.output_lock));
 	
 	buffer = malloc(sizeof (pthread_t) * thread_num);
 	
 	spawn_threads(thread_num, buffer, &context);
 	
+	/* Starting file tree crawling */
 	crawl_directories(&context);
 	
+	/* Producing NULL value to stop all the threads */
+	produce(&(context.q), NULL);
+	
+	/* Waiting for all threads to end */
 	for (i = 0; i < thread_num; i++) {
 		pthread_join(buffer[i], NULL);
 	}
+	
+	/* Cleanup */
+	mutex_destroy(&(context.output_lock));
 	
 	return (0);
 }
@@ -81,6 +94,10 @@ crawl_directories(struct search_context *context)
 		/* Rebuilding the paths */
 		build_paths(current, context->source, context->target, &first, &second);
 		
+		lock(&(context->output_lock));
+		printf("Source: %s\nTarget: %s\n", context->source, context->target);
+		unlock(&(context->output_lock));
+		
 		/* Ensuring that both exist and are directories */
 		if ((stat(first, &buf) == -1) || !S_ISDIR(buf.st_mode)) {
 			fprintf(stderr, "Error, direcotry %s doesn't exist!\n", first);
@@ -89,15 +106,15 @@ crawl_directories(struct search_context *context)
 		
 		if ((stat(second, &buf) == -1) || (!S_ISDIR(buf.st_mode))) {
 			/* Directory doesn't exist in the other tree */
-			lock(&console_lock);
+			lock(&(context->output_lock));
 			printf("Directory %s: doesn't exist!\n", second);
-			unlock(&console_lock);
+			unlock(&(context->output_lock));
 			/* Creating the directory */
 			if (context->sync) {
 				if (mkdir(second, DIRMASK) == -1) {
-					lock(&console_lock);
+					lock(&(context->output_lock));
 					printf("Directory %s: can't be created!\n", second);
-					unlock(&console_lock);
+					unlock(&(context->output_lock));
 					goto finish;
 				}
 				/* Directory succesfully created */
@@ -107,7 +124,7 @@ crawl_directories(struct search_context *context)
 		}
 		
 		/* Directory can't be opened */
-		if ((d = opendir(current)) == NULL) {
+		if ((d = opendir(first)) == NULL) {
 			fprintf(stderr, "Error opening the directory: %s\n", current);
 			goto finish;
 		}

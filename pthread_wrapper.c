@@ -61,7 +61,7 @@ unlock(pthread_mutex_t *m)
 }
 
 void 
-wait(pthread_cond_t *c, pthread_mutex_t *m)
+thread_wait(pthread_cond_t *c, pthread_mutex_t *m)
 {
 	int e;
 
@@ -70,7 +70,7 @@ wait(pthread_cond_t *c, pthread_mutex_t *m)
 }
 
 void 
-signal(pthread_cond_t *c)
+thread_signal(pthread_cond_t *c)
 {
 	int e;
 
@@ -78,5 +78,12 @@ signal(pthread_cond_t *c)
 		errx(1, "Error signaling: %s", strerror(e));
 }
 
-
+void
+thread_broadcast(pthread_cond_t *c)
+{
+	int e;
+	
+	if ((e = pthread_cond_broadcast(c)) != 0)
+		errx(1, "Error broadcasting: %s", strerror(e));
+}
 

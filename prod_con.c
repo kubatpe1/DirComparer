@@ -28,14 +28,14 @@ produce(struct queue *q, void *item)
 	/* Queue is full */
 	while (q->queue_size == QUEUE_MAX) {
 		/* Conditional wait */
-		wait(&(q->c_prod), &(q->m));
+		thread_wait(&(q->c_prod), &(q->m));
 	}
 	
 	/* Add the item to the queue */
 	q->data[(q->start_pos + q->queue_size) % QUEUE_MAX] = item;
 	q->queue_size++;
 	
-	signal(&(q->c_cons));
+	thread_broadcast(&(q->c_cons));
 
 	unlock(&(q->m));
 }
@@ -50,7 +50,7 @@ void
 
 	/* Queue is empty */
 	while (q->queue_size <= 0) {
-		wait(&(q->c_cons), &(q->m));
+		thread_wait(&(q->c_cons), &(q->m));
 	}
 
 	/* Fetch the item from the queue */
@@ -64,7 +64,7 @@ void
 		q->queue_size--;
 		
 		/* Wake up the producer, there is free space */
-		signal(&(q->c_prod));
+		thread_signal(&(q->c_prod));
 	}
 
 	unlock(&(q->m));

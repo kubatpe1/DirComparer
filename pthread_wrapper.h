@@ -10,7 +10,8 @@ void mutex_init(pthread_mutex_t *m);
 void mutex_destroy(pthread_mutex_t *m);
 void lock(pthread_mutex_t *m);
 void unlock(pthread_mutex_t *m);
-void wait(pthread_cond_t *c, pthread_mutex_t *m);
-void signal(pthread_cond_t *c);
+void thread_wait(pthread_cond_t *c, pthread_mutex_t *m);
+void thread_signal(pthread_cond_t *c);
+void thread_broadcast(pthread_cond_t *c);
 
 #endif
