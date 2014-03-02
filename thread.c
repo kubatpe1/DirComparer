@@ -32,9 +32,7 @@ compare_files(struct search_context *context, char *file)
 	/* Complete paths to both files */
 	char *first;
 	char *second;
-	
-	int first_len, second_len;
-	
+		
 	/* 0 = files are similar, 1 = files are different or the other one doesn't exist */
 	int different = 0;
 	
@@ -82,8 +80,8 @@ compare_files(struct search_context *context, char *file)
 			different = 1;
 			lock(&(context->output_lock));
 			printf("Files have different size:\n");
-			printf("%s - %lld\n", first, first_stat.st_size);
-			printf("%s - %lld\n", second, second_stat.st_size);
+			printf("%s - %llu\n", first, (unsigned long long)first_stat.st_size);
+			printf("%s - %llu\n", second, (unsigned long long)second_stat.st_size);
 			unlock(&(context->output_lock));
 			goto finish;
 		}
