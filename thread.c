@@ -3,14 +3,136 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <err.h>
+#include <string.h>
+#include <sys/stat.h>
 
+#include "search.h"
 #include "thread.h"
+#include "pthread_wrapper.h"
 
 #define BUFSIZE 25
 
 void *start(void *arg)
 {
+	struct search_context *cont = (struct search_context *)arg;
+	
+	/* Relative path to a file - gets from queue from main thread */
+	char *file;
+	
+	while ((file = consume(&cont->q)) != NULL) {
+		compare(cont, file);
+	}
+	
 	return (NULL);
+}
+
+void
+compare(struct search_context *cont, char *file)
+{
+	/* Complete paths to both files */
+	char *first;
+	char *second;
+	
+	int first_len, second_len;
+	
+	/* 0 = files are similar, 1 = files are different or the other one doesn't exist */
+	int different = 0;
+	
+	/* 0 = file won't be copied, 1 = file will be copied (replacing original one) */
+	int sync = 0;
+	
+	/* Structures for information about both files */
+	struct stat first_stat;
+	struct stat second_stat;
+	
+	int res;
+
+	
+	/* Constructing paths */
+	first_len = strlen(cont->source) + strlen(file) + 1;
+	second_len = strlen(cont->target) + strlen(file) + 1;
+	
+	first = calloc(first_len * sizeof(char), 0);
+	second = calloc(second_len * sizeof(char), 0);
+	
+	if (first == NULL || second == NULL) {
+		err(1, "Error allocating memory");
+	}
+	
+	strncpy(first, cont->source, strlen(cont->source));
+	strncpy(first + strlen(cont->source), file, strlen(file));
+	
+	strncpy(second, cont->target, strlen(cont->target));
+	strncpy(second + strlen(cont->target), file, strlen(file));
+	
+	/* Comparing files */
+	
+	/* 1. Existence */
+	if (stat(first, &first_stat) < 0) {
+		/* TODO: error, shouldn't happen */
+	}
+	if (stat(second, &second_stat) < 0) {
+		different = 1;
+		sync = 1;
+		lock(&console_lock);
+		printf("File %s: doesn't exist!\n", second);
+		unlock(&console_lock);
+		goto finish;
+	}
+	
+	/* Change date check */
+	if (first_stat.st_mtime > second_stat.st_mtime) {
+		sync = 1;
+	}
+	
+	/* 2. Size */
+	if (first_stat.st_size != second_stat.st_size) {
+		different = 1;
+		lock(&console_lock);
+		printf("Files have different size:\n");
+		printf("%s - %lld\n", first, first_stat.st_size);
+		printf("%s - %lld\n", second, second_stat.st_size);
+		unlock(&console_lock);
+		goto finish;
+	}
+	
+	/* 3. Type */
+	if ((first_stat.st_mode & S_IFMT) != (second_stat.st_mode & S_IFMT)) {
+		different = 1;
+		lock(&console_lock);
+		printf("Files %s and %s have different type.\n", first, second);
+		unlock(&console_lock);
+		goto finish;
+	}
+	
+	/* Optional - content */
+	if (cont->with_content && S_ISREG(first_stat.st_mode)) {
+		res = match_content(first, second);
+		if (res == -1) {
+			printf("Files %s and %s can't be compared.\n", first, second);
+			sync = 0;
+		}
+		if (!res) {
+			different = 1;
+			lock(&console_lock);
+			printf("Files %s and %s have different content!\n", first, second);
+			unlock(&console_lock);
+			goto finish;
+		}
+	}
+	
+finish:
+	/* Optional - copy */
+	if (different && sync && cont->sync) {
+		if (copy(first, second) == -1) {
+			printf("File %s can't be copied to destination %s.\n", first, second);
+		}
+	}
+	
+	/* Freeing the memory (including consumed string from queue) */
+	free(first);
+	free(second);
+	free(file);
 }
 
 int
@@ -93,7 +215,7 @@ copy(char *source, char *destination)
 		return (-1);
 	}
 	
-	if ((fd2 = open(destination, O_WRONLY | O_CREAT | O_TRUNC)) == -1) {
+	if ((fd2 = open(destination, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
 		warn("Error opening a file");
 		close(fd1);
 		return (-1);
@@ -123,6 +245,9 @@ copy(char *source, char *destination)
 		close(fd2);
 		return (-1);
 	}
+	
+	close(fd1);
+	close(fd2);
 	
 	return (0);
 }
