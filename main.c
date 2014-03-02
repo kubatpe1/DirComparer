@@ -193,9 +193,30 @@ main(int argc, char **argv)
 	return (0);
 	 */
 	
-	search("F1", "F4", 1, 1, 8);
+	int res1, res2, res;
 	
-	return (0);
+	int sync = 0;
+	
+	char *src = "F6";
+	char *dst = "F7";
+	
+	res1 = search(src, dst, 1, sync, 8);
+	res2 = search(dst, src, 0, sync, 8);
+	
+	res = res1 || res2;
+	
+	/* Final report */
+	if (!res) {
+		printf("Directories %s and %s have similar content.\n", src, dst);
+	}
+	else {
+		printf("Directories %s and %s have different content.\n", src, dst);
+		if (sync) {
+			printf("Content of %s was synchronized with content of %s.\n", dst, src);
+		}
+	}
+	
+	return (res);
 
 	/*
 	int pid, status, threadn;

@@ -23,6 +23,8 @@ search(char *src, char *dst, int with_content, int sync, int thread_num)
 	
 	int i;
 	
+	/* Result - 0 = trees are similar, 1 = trees are different */
+	context.result = 0;
 	context.source = src;
 	context.target = dst;
 	context.with_content = with_content;
@@ -48,7 +50,7 @@ search(char *src, char *dst, int with_content, int sync, int thread_num)
 	/* Cleanup */
 	mutex_destroy(&(context.output_lock));
 	
-	return (0);
+	return (context.result);
 }
 
 void
@@ -94,10 +96,6 @@ crawl_directories(struct search_context *context)
 		/* Rebuilding the paths */
 		build_paths(current, context->source, context->target, &first, &second);
 		
-		lock(&(context->output_lock));
-		printf("Source: %s\nTarget: %s\n", context->source, context->target);
-		unlock(&(context->output_lock));
-		
 		/* Ensuring that both exist and are directories */
 		if ((stat(first, &buf) == -1) || !S_ISDIR(buf.st_mode)) {
 			fprintf(stderr, "Error, direcotry %s doesn't exist!\n", first);
@@ -106,14 +104,15 @@ crawl_directories(struct search_context *context)
 		
 		if ((stat(second, &buf) == -1) || (!S_ISDIR(buf.st_mode))) {
 			/* Directory doesn't exist in the other tree */
+			context->result = 1;
 			lock(&(context->output_lock));
-			printf("Directory %s: doesn't exist!\n", second);
+			printf("Directory %s doesn't exist!\n", second);
 			unlock(&(context->output_lock));
 			/* Creating the directory */
 			if (context->sync) {
 				if (mkdir(second, DIRMASK) == -1) {
 					lock(&(context->output_lock));
-					printf("Directory %s: can't be created!\n", second);
+					printf("Directory %s can't be created!\n", second);
 					unlock(&(context->output_lock));
 					goto finish;
 				}
@@ -126,7 +125,7 @@ crawl_directories(struct search_context *context)
 		/* Directory can't be opened */
 		if ((d = opendir(first)) == NULL) {
 			fprintf(stderr, "Error opening the directory: %s\n", current);
-			goto finish;
+			exit(1);
 		}
 		
 		while ((de = readdir(d)) != NULL) {

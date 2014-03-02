@@ -55,7 +55,8 @@ compare_files(struct search_context *context, char *file)
 	
 	/* 1. Existence */
 	if (stat(first, &first_stat) == -1) {
-		/* TODO: error, shouldn't happen */
+		fprintf(stderr, "Error, can't read file stats: %s\n", first);
+		exit(1);
 	}
 	if (stat(second, &second_stat) == -1) {
 		different = 1;
@@ -66,45 +67,49 @@ compare_files(struct search_context *context, char *file)
 		goto finish;
 	}
 	
-	/* Change date check */
-	if (first_stat.st_mtime > second_stat.st_mtime) {
-		sync = 1;
-	}
-	
-	/* 2. Size */
-	if (first_stat.st_size != second_stat.st_size) {
-		different = 1;
-		lock(&(context->output_lock));
-		printf("Files have different size:\n");
-		printf("%s - %lld\n", first, first_stat.st_size);
-		printf("%s - %lld\n", second, second_stat.st_size);
-		unlock(&(context->output_lock));
-		goto finish;
-	}
-	
-	/* 3. Type */
-	if ((first_stat.st_mode & S_IFMT) != (second_stat.st_mode & S_IFMT)) {
-		different = 1;
-		lock(&(context->output_lock));
-		printf("Files %s and %s have different type.\n", first, second);
-		unlock(&(context->output_lock));
-		goto finish;
-	}
-	
-	/* Optional - content */
-	if (context->with_content && S_ISREG(first_stat.st_mode)) {
-		res = match_content(first, second);
-		if (res == -1) {
-			printf("Files %s and %s can't be compared.\n", first, second);
-			sync = 0;
+	if (context->with_content) {
+		
+		/* Change date check */
+		if (first_stat.st_mtime > second_stat.st_mtime) {
+			sync = 1;
 		}
-		if (!res) {
+		
+		/* 2. Size */
+		if (first_stat.st_size != second_stat.st_size) {
 			different = 1;
 			lock(&(context->output_lock));
-			printf("Files %s and %s have different content!\n", first, second);
+			printf("Files have different size:\n");
+			printf("%s - %lld\n", first, first_stat.st_size);
+			printf("%s - %lld\n", second, second_stat.st_size);
 			unlock(&(context->output_lock));
 			goto finish;
 		}
+		
+		/* 3. Type */
+		if ((first_stat.st_mode & S_IFMT) != (second_stat.st_mode & S_IFMT)) {
+			different = 1;
+			lock(&(context->output_lock));
+			printf("Files %s and %s have different type.\n", first, second);
+			unlock(&(context->output_lock));
+			goto finish;
+		}
+		
+		/* 4. Content */
+		if (context->with_content && S_ISREG(first_stat.st_mode)) {
+			res = match_content(first, second);
+			if (res == -1) {
+				printf("Files %s and %s can't be compared.\n", first, second);
+				sync = 0;
+			}
+			if (!res) {
+				different = 1;
+				lock(&(context->output_lock));
+				printf("Files %s and %s have different content!\n", first, second);
+				unlock(&(context->output_lock));
+				goto finish;
+			}
+		}
+			
 	}
 	
 finish:
@@ -114,6 +119,9 @@ finish:
 			printf("File %s can't be copied to destination %s.\n", first, second);
 		}
 	}
+	
+	/* Reporting difference */
+	if (different) context->result = 1;
 	
 	/* Freeing the memory (including consumed string from queue) */
 	free(first);

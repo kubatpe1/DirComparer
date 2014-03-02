@@ -13,6 +13,7 @@
 
 /* Structure defining search context and parameters */
 struct search_context {
+	int result;
 	struct queue q;
 	char *source;
 	char *target;
