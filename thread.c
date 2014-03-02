@@ -49,29 +49,15 @@ compare(struct search_context *cont, char *file)
 
 	
 	/* Constructing paths */
-	first_len = strlen(cont->source) + strlen(file) + 1;
-	second_len = strlen(cont->target) + strlen(file) + 1;
-	
-	first = calloc(first_len * sizeof(char), 0);
-	second = calloc(second_len * sizeof(char), 0);
-	
-	if (first == NULL || second == NULL) {
-		err(1, "Error allocating memory");
-	}
-	
-	strncpy(first, cont->source, strlen(cont->source));
-	strncpy(first + strlen(cont->source), file, strlen(file));
-	
-	strncpy(second, cont->target, strlen(cont->target));
-	strncpy(second + strlen(cont->target), file, strlen(file));
+	build_paths(file, cont->source, cont->target, &first, &second);
 	
 	/* Comparing files */
 	
 	/* 1. Existence */
-	if (stat(first, &first_stat) < 0) {
+	if (stat(first, &first_stat) == -1) {
 		/* TODO: error, shouldn't happen */
 	}
-	if (stat(second, &second_stat) < 0) {
+	if (stat(second, &second_stat) == -1) {
 		different = 1;
 		sync = 1;
 		lock(&console_lock);

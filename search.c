@@ -1,10 +1,191 @@
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "search.h"
 #include "thread.h"
+#include "stringstack.h"
 
 int
-search(char *src, char *dst, int with_content, int sync)
+search(char *src, char *dst, int with_content, int sync, int thread_num)
 {
+	/* Search context structure accessed by all the threads */
+	struct search_context context;
+	
+	/* Buffer for all the threads */
+	pthread_t *buffer;
+	
+	int i;
+	
+	context.source = src;
+	context.target = dst;
+	context.with_content = with_content;
+	context.sync = sync;
+	
+	buffer = malloc(sizeof (pthread_t) * thread_num);
+	
+	spawn_threads(thread_num, buffer, &context);
+	
+	crawl_directories(&context);
+	
+	for (i = 0; i < thread_num; i++) {
+		pthread_join(buffer[i], NULL);
+	}
+	
 	return (0);
 }
+
+void
+spawn_threads(int n, pthread_t *buffer, struct search_context *context)
+{
+	int i, e;
+	
+	for (i = 0; i < n; i++) {
+		if ((e = pthread_create(buffer + i, NULL, start, (void*)context)) != 0) {
+			fprintf(stderr, "Error creating thread!\n");
+			exit(1);
+		}
+	}
+}
+
+void
+crawl_directories(struct search_context *context)
+{
+	/* Stack for directories to crawl through */
+	struct stack st;
+	
+	/* Directory and its entries */
+	DIR *d;
+	struct dirent *de;
+	
+	char *current, *path;
+	int len;
+	
+	/* Full directory paths */
+	char *first, *second;
+	
+	char *empty = "";
+	
+	/* File stat structure */
+	struct stat buf;	
+	
+	/* Initialize the stack with an empty directory */
+	stack_init(&st, STACKSIZE);
+	stack_push(&st, empty);
+	
+	while ((current = stack_pop(&st)) != NULL) {
+		
+		/* Rebuilding the paths */
+		build_paths(current, context->source, context->target, &first, &second);
+		
+		/* Ensuring that both exist and are directories */
+		if ((stat(first, &buf) == -1) || !S_ISDIR(buf.st_mode)) {
+			fprintf(stderr, "Error, direcotry %s doesn't exist!\n", first);
+			exit(1);
+		}
+		
+		if ((stat(second, &buf) == -1) || (!S_ISDIR(buf.st_mode))) {
+			/* Directory doesn't exist in the other tree */
+			lock(&console_lock);
+			printf("Directory %s: doesn't exist!\n", second);
+			unlock(&console_lock);
+			/* Creating the directory */
+			if (context->sync) {
+				if (mkdir(second, DIRMASK) == -1) {
+					lock(&console_lock);
+					printf("Directory %s: can't be created!\n", second);
+					unlock(&console_lock);
+					goto finish;
+				}
+				/* Directory succesfully created */
+			}
+			/* If we don't create the directory, we just skip it */
+			else goto finish;
+		}
+		
+		/* Directory can't be opened */
+		if ((d = opendir(current)) == NULL) {
+			fprintf(stderr, "Error opening the directory: %s\n", current);
+			goto finish;
+		}
+		
+		while ((de = readdir(d)) != NULL) {
+			/* Excluding loopback hardlinks */
+			if ((strcmp(de->d_name, ".") == 0) || (strcmp(de->d_name, "..") == 0)) {
+				continue;
+			}
+			
+			/* Constructing new relative path */
+			len = strlen(current);
+			path = malloc((len + strlen(de->d_name) + 2) * sizeof (char));
+			strcpy(path, current);
+			strcpy(path + len, "/");
+			strcpy(path + len + 1, de->d_name);
+			
+			/* Constructing absolute paths */
+			free(first);
+			free(second);
+			build_paths(path, context->source, context->target, &first, &second);
+						
+			/* Reading file stats */
+			if (stat(first, &buf) == -1) {
+				fprintf(stderr, "Error reading the file stats: %s\n", path);
+				free(path);
+				continue;
+			}
+			
+			/* Directory - add to crawling stack */
+			if (S_ISDIR(buf.st_mode)) {
+				stack_push(&st, path);
+				continue;
+			}
+			/* Other file - add to queue for threads to process */
+			else {
+				produce(&(context->q), path);
+			}
+		}
+		
+		if (closedir(d) == -1) {
+			fprintf(stderr, "Error closing the directory!\n");
+			exit(1);
+		}
+		
+		/* Final deallocation block */
+	finish:
+		free(first);
+		free(second);
+		if (current != empty) {
+			free(current);
+		}
+	}
+	
+	stack_delete(&st);
+}
+
+void
+build_paths(char *rel_path, char *first, char *second, char **first_res, char **second_res)
+{
+	int first_len, second_len;
+	
+	/* Constructing paths */
+	first_len = strlen(first) + strlen(rel_path) + 1;
+	second_len = strlen(second) + strlen(rel_path) + 1;
+	
+	(*first_res) = calloc(first_len * sizeof(char), 0);
+	(*second_res) = calloc(second_len * sizeof(char), 0);
+	
+	if (first == NULL || second == NULL) {
+		err(1, "Error allocating memory");
+	}
+	
+	strncpy((*first_res), first, strlen(first));
+	strncpy((*first_res) + strlen(first), rel_path, strlen(rel_path));
+	
+	strncpy((*second_res), second, strlen(second));
+	strncpy((*second_res) + strlen(second), rel_path, strlen(rel_path));
+}
+
+

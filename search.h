@@ -5,6 +5,12 @@
 
 #include "prod_con.h"
 
+/* Starting size of the string stack for crawl function */
+#define STACKSIZE 25
+
+/* Mask for directory creation */
+#define DIRMASK 0777
+
 /* Global lock for console output */
 pthread_mutex_t console_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -18,6 +24,16 @@ struct search_context {
 };
 
 /* Performs the search with specified parameters */
-int search(char *src, char *dst, int with_content, int sync);
+int search(char *src, char *dst, int with_content, int sync, int thread_num);
+
+/* Spawns all the consumer threads */
+void spawn_threads(int n, pthread_t *buffer, struct search_context *context);
+
+/* Crawls the directory tree and adds all non-directory files to queue */
+void crawl_directories(struct search_context *context);
+
+/* Builds two paths by concatenating strings, user has to free the memory himself */
+void build_paths(char *rel_path, char *first, char *second, char **first_res, char **second_res);
+
 
 #endif /* SEARCH_H */

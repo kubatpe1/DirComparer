@@ -158,7 +158,7 @@ void
 }
  */
 
-
+/*
 void 
 spawn_threads(int n, pthread_t *buffer)
 {
@@ -171,10 +171,12 @@ spawn_threads(int n, pthread_t *buffer)
 		}
 	}
 }
+ */
 
 int 
 main(int argc, char **argv)
 {
+	/*
 	int res1 = match_content("main.c", "main2.x");
 	int res2 = match_content("main.c", "search.c");
 	copy("main.c", "main3.z");
@@ -188,6 +190,11 @@ main(int argc, char **argv)
 	init_queue(&q);
 	spawn_threads(n, buffer);
 	search("../..", &q);
+	return (0);
+	 */
+	
+	
+	
 	return (0);
 
 	/*
