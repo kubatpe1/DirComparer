@@ -8,16 +8,15 @@
 #include <dirent.h>
 #include <inttypes.h>
 #include <pthread.h>
-#include <getopt.h>
 
 #include "search.h"
 #include "stringstack.h"
 #include "thread.h"
 #include "prod_con.h"
 
-#define THREADCOUNT 4
+#define	THREADCOUNT 4
 
-#define OPTSTR "wst:"
+#define	OPTSTR "wst:"
 
 
 /* Prints the program usage */
@@ -41,7 +40,7 @@ main(int argc, char **argv)
 	
 	/* Loading options */
 	
-	while ((opt = geopt(argc, argv, OPTSTR))) {
+	while ((opt = getopt(argc, argv, OPTSTR)) != -1) {
 		switch (opt) {
 			case 's':
 				sync = 1;
@@ -84,12 +83,15 @@ main(int argc, char **argv)
 	
 	/* Final report */
 	if (!res) {
-		printf("Directories %s and %s have similar content.\n", src, dst);
+		printf("Directories %s and %s have similar content.\n",
+			   src, dst);
 	}
 	else {
-		printf("Directories %s and %s have different content.\n", src, dst);
+		printf("Directories %s and %s have different content.\n",
+			   src, dst);
 		if (sync) {
-			printf("Content of %s was synchronized with content of %s.\n", dst, src);
+			printf("Content of %s was synchronized with content of %s.\n",
+				   dst, src);
 		}
 	}
 	
