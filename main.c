@@ -27,19 +27,19 @@ usage()
 
 }
 
-int 
+int
 main(int argc, char **argv)
 {
 	int sync = 0;
 	int with_content = 0;
 	int thread_count = THREADCOUNT;
 	int opt;
-	
+
 	int res1, res2, res;
 	char *src, *dst;
-	
+
 	/* Loading options */
-	
+
 	while ((opt = getopt(argc, argv, OPTSTR)) != -1) {
 		switch (opt) {
 			case 's':
@@ -60,27 +60,27 @@ main(int argc, char **argv)
 				return (1);
 		}
 	}
-	
+
 	/* Loading arguments */
 	argv = argv + optind;
-	
+
 	if ((argc - optind) != 2) {
 		printf("Invalid number of arguments\n");
 		usage();
 		return (1);
 	}
-	
+
 	src = argv[0];
 	dst = argv[1];
-	
+
 	/* Performing the search */
 	/* each search is one-directional */
 	res1 = search(src, dst, with_content, sync, thread_count);
 	res2 = search(dst, src, 0, sync, thread_count);
-	
+
 	/* Merging results of both searches */
 	res = res1 || res2;
-	
+
 	/* Final report */
 	if (!res) {
 		printf("Directories %s and %s have similar content.\n",
@@ -88,12 +88,12 @@ main(int argc, char **argv)
 	}
 	else {
 		printf("Directories %s and %s have different content.\n",
-			   src, dst);
+			    src, dst);
 		if (sync) {
 			printf("Content of %s was synchronized with content of %s.\n",
-				   dst, src);
+				    dst, src);
 		}
 	}
-	
+
 	return (res);
 }
