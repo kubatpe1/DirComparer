@@ -148,7 +148,7 @@ crawl_directories(struct search_context *context)
 						
 			/* Reading file stats */
 			if (stat(first, &buf) == -1) {
-				fprintf(stderr, "Error reading the file stats: %s\n", path);
+				fprintf(stderr, "Error reading the file stats: %s\n", first);
 				free(path);
 				continue;
 			}

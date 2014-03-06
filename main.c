@@ -84,7 +84,7 @@ main(int argc, char **argv)
 	/* Final report */
 	if (!res) {
 		printf("Directories %s and %s have similar content.\n",
-			   src, dst);
+			    src, dst);
 	}
 	else {
 		printf("Directories %s and %s have different content.\n",
