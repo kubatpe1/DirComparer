@@ -98,7 +98,10 @@ crawl_directories(struct search_context *context)
 		
 		/* Ensuring that both exist and are directories */
 		if ((stat(first, &buf) == -1) || !S_ISDIR(buf.st_mode)) {
+			lock(&(context->output_lock));
 			fprintf(stderr, "Error, direcotry %s doesn't exist!\n", first);
+			unlock(&(context->output_lock));
+
 			exit(1);
 		}
 		
@@ -124,7 +127,10 @@ crawl_directories(struct search_context *context)
 		
 		/* Directory can't be opened */
 		if ((d = opendir(first)) == NULL) {
+			lock(&(context->output_lock));
 			fprintf(stderr, "Error opening the directory: %s\n", current);
+			unlock(&(context->output_lock));
+
 			exit(1);
 		}
 		
@@ -148,7 +154,10 @@ crawl_directories(struct search_context *context)
 						
 			/* Reading file stats */
 			if (stat(first, &buf) == -1) {
+				lock(&(context->output_lock));
 				fprintf(stderr, "Error reading the file stats: %s\n", first);
+				unlock(&(context->output_lock));
+
 				free(path);
 				continue;
 			}
@@ -165,7 +174,10 @@ crawl_directories(struct search_context *context)
 		}
 		
 		if (closedir(d) == -1) {
+			lock(&(context->output_lock));
 			fprintf(stderr, "Error closing the directory!\n");
+			unlock(&(context->output_lock));
+
 			exit(1);
 		}
 		
