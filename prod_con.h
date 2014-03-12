@@ -1,10 +1,10 @@
 #ifndef PROD_CON_H
-#define PROD_CON_H
+#define	PROD_CON_H
 
 #include <err.h>
 #include <pthread.h>
 
-#define QUEUE_MAX 25
+#define	QUEUE_MAX 25
 
 /* Structure for storing the producer-consumer queue data and locks */
 /* Size fixed by QUEUE_MAX constant */

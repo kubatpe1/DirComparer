@@ -85,12 +85,12 @@ main(int argc, char **argv)
 	if (!res) {
 		printf("Directories %s and %s have similar content.\n",
 			    src, dst);
-	}
-	else {
+	} else {
 		printf("Directories %s and %s have different content.\n",
 			    src, dst);
 		if (sync) {
-			printf("Content of %s was synchronized with content of %s.\n",
+			printf("Content of %s was "
+				    "synchronized with content of %s.\n",
 				    dst, src);
 		}
 	}
