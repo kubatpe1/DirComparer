@@ -202,8 +202,8 @@ build_paths(char *rel_path, char *first, char *second, char **first_res, char **
 	first_len = strlen(first) + strlen(rel_path) + 1;
 	second_len = strlen(second) + strlen(rel_path) + 1;
 	
-	(*first_res) = calloc(first_len * sizeof(char), 0);
-	(*second_res) = calloc(second_len * sizeof(char), 0);
+	(*first_res) = calloc(first_len, sizeof(char));
+	(*second_res) = calloc(second_len, sizeof(char));
 	
 	if (first == NULL || second == NULL) {
 		err(1, "Error allocating memory");
