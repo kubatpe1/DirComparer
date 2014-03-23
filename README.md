@@ -12,7 +12,7 @@ User Guide
 --------------------
 
 
-DirComparer is a simple tool for Unix (and Unix-like) operating systems. It allows user to simply compare two directory trees (meaning recursively including their content). In addition, it can be used to synchronise content of directory trees and to make recursive copies of them.
+DirComparer is a simple tool for Unix (and Unix-like) operating systems. It allows user to compare two directory trees (meaning recursively including their content) and find out their differences. In addition, it can be used to synchronize content of directory trees and to make recursive copies of them. Comparation and copying work multi-threded for greater efficiency and performance.
 
 
 2. Getting and compiling the program
@@ -78,8 +78,48 @@ Compares directory structure. If any directories or files don't have their count
 
     dircmp.out -w -s /dir1 /dir2
 
-Compares directory structure and file content. In addition to previous scenario, if a file from /dir1 has its counterpart in /dir2 with different content, it is replaced by content of the file in /dir1.
+Compares directory structure and file content. In addition to previous scenario, if a file from /dir1 has its counterpart in /dir2 with different content, the older file is replaced with the newer one.
 
     dircmp -s /dir1 /newdir
 
 If newdir doesn't exist, copies dir1 recursively with its content.
+
+
+4. Multiple thread usage
+------------------------
+
+During the program execution, files are compared and copied in separate threads that are independent on the main thread apart from being served the file names. This can be a fine performance boost especially for a directory trees with significant number of larger files.
+
+Number of threads that are used for file operations can be specified by a command line option `-t`. Default value is 4, minimum value is 1 (for obvious reasons). The maximum value is not specified, although there is a limit which you should never exceed - the maximum number of files that can be opened at once on your system. If you allow more threads to be used, there might be situation in which all of those threads need to open a file and some of them would fail to do so. This would lead to program failure. If you use the `-s` option, the limit should be even lower - every thread potentially requires two opened files at once.
+
+Ideal number of threads can't be recommended. It depends on the actual system, architecture, data input etc. Generally the default 4 threads seem to be working fine on most system.
+
+
+5. Quick source code overview
+-----------------------------
+
+### Implementation details ###
+
+The program is implemented using producer-consumer scheme. There is one thread (the main one) crawling through the file system in folder specified by user, checking existence of the same folder structure in the other folder. Whenever a non-directory file is encountered, its path relative to the starting folder is added to the queue. It is then fetched by a consumer thread, which reconstructs both absolute paths (for file in the first folder and file in the second folder), checks, whether both exist, then checks if they are the same and copies the first one if needed. 
+
+This entire process compares uses one directory as a model and checks whether the other one is the same. In order to perform both-way check, the same comparing function is ran twice, second time using the directories swapped and avoiding checking the files which exist in both trees again.
+
+### Source files ###
+
+The source code is divided into a few stand-alone source files (which are compiled separately using the make utility). Some of those modules are designed to work on itself and can be used by any other program as an added library. List of those modules follows:
+
+ * `stringstack.h`, `stringstack.c` - simple stack with variable size for storing c-strings (char *), uses automatic reallocation
+ 
+ * `prod_con.h`, `prod_con.c` - structure (queue) for storing data in producer-consumer type of applications; uses locks and conditional variables and provides a very simple interface for both producer and consumer threads
+ 
+ * `pthread_wrapper.h`, `pthread_wrapper.c` - simple wrapper over most used pthread functions which checks the return values and in case of an error prints an error message and exits the program
+ 
+Interface for all those modules is very simple and can be found (along with short description) in the header files.
+
+The other modules are specific for this program:
+
+ * `thread.h`, `thread.c` - code executed by all the consumer threads - performs matching and copying of provided files
+
+ * `search.h`, `search.c` - main logic of the application, functions for spawning threads, performing the producer part (crawling the filesystem and preparing the file names)
+ 
+ * `main.h`, `main.c` - entry point for the application, parses user options and calls corresponding function from `search.c`

@@ -100,14 +100,12 @@ crawl_directories(struct search_context *context)
 
 		/* Ensuring that both exist and are directories */
 		if ((stat(first, &buf) == -1) || !S_ISDIR(buf.st_mode)) {
-			lock(&(context->output_lock));
-			fprintf(stderr, "Error, direcotry"
-				    "%s doesn't exist!\n", first);
-			unlock(&(context->output_lock));
-
-			exit(1);
+			/* File either doesn't exist, or is not a directory, we ignore it */
+			printf("Directory %s doesn't exist!\n", first);
+			context->result = 1;
+			goto finish;
 		}
-
+		
 		if ((stat(second, &buf) == -1) || (!S_ISDIR(buf.st_mode))) {
 			/* Directory doesn't exist in the other tree */
 			context->result = 1;
@@ -119,7 +117,7 @@ crawl_directories(struct search_context *context)
 				if (mkdir(second, DIRMASK) == -1) {
 					lock(&(context->output_lock));
 					printf("Directory %s can't be created!"
-						    "\n", second);
+						   "\n", second);
 					unlock(&(context->output_lock));
 					goto finish;
 				}
