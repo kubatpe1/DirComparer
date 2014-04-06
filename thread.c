@@ -34,26 +34,26 @@ compare_files(struct search_context *context, char *file)
 	char *first;
 	char *second;
 
-	/* 0 = files are similar, 1 = files are different 
-	 or the other one doesn't exist */
+	/* 0 = files are similar, 1 = files are different */
+	/* or the other one doesn't exist */
 	int different = 0;
 
-	/* 0 = file won't be copied, 1 = file will be copied 
-	 (replacing original one) 2 = file will be copied the other way */
+	/* 0 = file won't be copied, 1 = file will be copied */
+	/* (replacing original one) 2 = file will be copied the other way */
 	int sync = 0;
-	
+
 	/* Structures for information about both files */
 	struct stat first_stat;
 	struct stat second_stat;
-	
+
 	int res;
 
-	
+
 	/* Constructing paths */
 	build_paths(file, context->source, context->target, &first, &second);
-	
+
 	/* Comparing files */
-	
+
 	/* 1. Existence */
 	if (stat(first, &first_stat) == -1) {
 		fprintf(stderr, "Error, can't read file stats: %s\n", first);
@@ -67,26 +67,22 @@ compare_files(struct search_context *context, char *file)
 		unlock(&(context->output_lock));
 		goto finish;
 	}
-	
+
 	if (context->with_content) {
-		
 		/* Change date check */
 		if (first_stat.st_mtime > second_stat.st_mtime) {
 			sync = 1;
-		}
-		else if (first_stat.st_mtime < second_stat.st_mtime) {
+		} else if (first_stat.st_mtime < second_stat.st_mtime) {
 			sync = 2;
-		}
-		else {
+		} else {
 			/* Both files have the same date */
 			if (first_stat.st_size >= second_stat.st_size) {
 				sync = 1;
-			}
-			else {
+			} else {
 				sync = 2;
 			}
 		}
-		
+
 		/* 2. Size */
 		if (first_stat.st_size != second_stat.st_size) {
 			different = 1;
@@ -99,7 +95,7 @@ compare_files(struct search_context *context, char *file)
 			unlock(&(context->output_lock));
 			goto finish;
 		}
-		
+
 		/* 3. Type */
 		if ((first_stat.st_mode & S_IFMT) !=
 			    (second_stat.st_mode & S_IFMT)) {
@@ -110,7 +106,7 @@ compare_files(struct search_context *context, char *file)
 			unlock(&(context->output_lock));
 			goto finish;
 		}
-		
+
 		/* 4. Content */
 		if (context->with_content && S_ISREG(first_stat.st_mode)) {
 			res = match_content(first, second);
@@ -128,9 +124,8 @@ compare_files(struct search_context *context, char *file)
 				goto finish;
 			}
 		}
-			
 	}
-	
+
 finish:
 	/* Optional - copy */
 	if (different && context->sync) {
@@ -151,10 +146,10 @@ finish:
 			}
 		}
 	}
-	
+
 	/* Reporting difference */
 	if (different) context->result = 1;
-	
+
 	/* Freeing the memory (including consumed string from queue) */
 	free(first);
 	free(second);
@@ -171,22 +166,22 @@ match_content(char *first, char *second)
 	int read1, read2;
 	int ret_val = 1;
 	int i;
-	
+
 	if ((fd1 = open(first, O_RDONLY)) == -1) {
 		warn("Error opening a file");
 		return (-1);
 	}
-	
+
 	if ((fd2 = open(second, O_RDONLY)) == -1) {
 		warn("Error opening a file");
 		close(fd1);
 		return (-1);
 	}
-		
+
 	while (1) {
 		read1 = read(fd1, buf1, BUFSIZE);
 		read2 = read(fd2, buf2, BUFSIZE);
-		
+
 		/* Error reading */
 		if (read1 == -1 || read2 == -1) {
 			warn("Error reading a file");
@@ -194,18 +189,18 @@ match_content(char *first, char *second)
 			close(fd2);
 			return (-1);
 		}
-		
+
 		/* Files have different lengths */
 		if (read1 != read2) {
 			ret_val = 0;
 			break;
 		}
-		
+
 		/* Reached end of both files */
 		if (read1 == 0) {
 			break;
 		}
-		
+
 		/* Comparing actual bytes */
 		for (i = 0; i < read1; i++) {
 			if (buf1[i] != buf2[i]) {
@@ -213,16 +208,16 @@ match_content(char *first, char *second)
 				break;
 			}
 		}
-		
+
 		/* If we found a difference, we can end */
 		if (ret_val == 0) {
 			break;
 		}
 	}
-	
+
 	close(fd1);
 	close(fd2);
-	
+
 	return (ret_val);
 }
 
@@ -235,24 +230,24 @@ copy(char *source, char *destination)
 	/* File descriptors */
 	int fd1, fd2;
 	int rd, written;
-	
+
 	if ((fd1 = open(source, O_RDONLY)) == -1) {
 		warn("Error opening a file");
 		return (-1);
 	}
-	
+
 	if ((fd2 = open(destination, O_WRONLY | O_CREAT | O_TRUNC, 0666))
 		    == -1) {
 		warn("Error opening a file");
 		close(fd1);
 		return (-1);
 	}
-	
+
 	/* Reading a file */
 	while ((rd = read(fd1, buf, BUFSIZE)) > 0) {
-		
+
 		bufptr = buf;
-		
+
 		/* Writing to a file */
 		while (rd > 0) {
 			if ((written = write(fd2, buf, rd)) < 0) {
@@ -265,16 +260,16 @@ copy(char *source, char *destination)
 			bufptr += written;
 		}
 	}
-	
+
 	if (rd < 0) {
 		warn("Error writing to a file");
 		close(fd1);
 		close(fd2);
 		return (-1);
 	}
-	
+
 	close(fd1);
 	close(fd2);
-	
+
 	return (0);
 }
