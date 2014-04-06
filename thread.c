@@ -136,8 +136,7 @@ finish:
 					    first, second);
 				unlock(&(context->output_lock));
 			}
-		}
-		else if (sync == 2) {
+		} else if (sync == 2) {
 			if (copy(second, first) == -1) {
 				lock(&(context->output_lock));
 				printf("File %s can't be copied to destination %s.\n",
