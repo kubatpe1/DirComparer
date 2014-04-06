@@ -60,6 +60,14 @@ You can use any combination of following optional switches:
  * `-s` ... synchronizes content of both files
  
  * `-t` ... specifies how many threads should be used for checking the file content and copying
+ 
+### Synchronization details ###
+
+If `-s` option is used, content of both directories is changed to match the other one. If a file exists in one tree without equivalent in the other, it is simply copied. The same goes for whole subdirectories. If a file has an equivalent with same name, one file is replaced by the other following those rules (if rule with higher preference can't decide, rule with lower preference is used):
+
+ 1. Newer file is kept
+ 2. Larger file is kept
+ 3. File from the first directory is kept
 
 ### Typical scenarios ###
 
