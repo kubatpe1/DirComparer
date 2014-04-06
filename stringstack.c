@@ -3,10 +3,10 @@
 
 #include "stringstack.h"
 
-#define STEP 15
+#define	STEP 15
 
 void
-stack_init(struct stack *stack, int start_size) 
+stack_init(struct stack *stack, int start_size)
 {
 	if (stack == NULL) {
 		fprintf(stderr, "Stack is NULL!\n");
@@ -20,7 +20,7 @@ stack_init(struct stack *stack, int start_size)
 
 	stack->size = start_size;
 	stack->top = -1;
-	stack->data = malloc((stack->size) * sizeof(char *));
+	stack->data = malloc((stack->size) * sizeof (char *));
 	if (stack->data == NULL) {
 		fprintf(stderr, "Error allocating the memory!\n");
 		exit(1);
@@ -43,18 +43,19 @@ stack_push(struct stack *stack, char *item)
 	if (stack->top >= stack->size - 1) {
 		stack->size += STEP;
 		printf("Realloc with %d\n", stack->size);
-		stack->data = realloc((void *)(stack->data), stack->size * sizeof(char *));
+		stack->data = realloc((void *)(stack->data), stack->size * sizeof (char *));
 		if (stack->data == NULL) {
 			fprintf(stderr, "Error allocating the memory!\n");
 			exit(1);
 		}
-		
+
 	}
 
 	stack->data[++(stack->top)] = item;
 }
 
-char *stack_pop(struct stack *stack)
+char
+*stack_pop(struct stack *stack)
 {
 	if (stack == NULL) {
 		fprintf(stderr, "Stack is NULL!\n");
@@ -63,13 +64,13 @@ char *stack_pop(struct stack *stack)
 
 	if (stack->top < 0) {
 		return (NULL);
-	}
-	else {
+	} else {
 		return (stack->data[(stack->top)--]);
 	}
 }
 
-void stack_delete(struct stack *stack)
+void
+stack_delete(struct stack *stack)
 {
 	if (stack == NULL) {
 		fprintf(stderr, "Stack is NULL!\n");
@@ -85,6 +86,3 @@ void stack_delete(struct stack *stack)
 	stack->size = 0;
 	stack->top = -1;
 }
-
-
-

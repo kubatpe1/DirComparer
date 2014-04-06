@@ -100,12 +100,12 @@ crawl_directories(struct search_context *context)
 
 		/* Ensuring that both exist and are directories */
 		if ((stat(first, &buf) == -1) || !S_ISDIR(buf.st_mode)) {
-			/* File either doesn't exist, or is not a directory, we ignore it */
+			/* File either doesn't exist, or is not a directory */
 			printf("Directory %s doesn't exist!\n", first);
 			context->result = 1;
 			goto finish;
 		}
-		
+
 		if ((stat(second, &buf) == -1) || (!S_ISDIR(buf.st_mode))) {
 			/* Directory doesn't exist in the other tree */
 			context->result = 1;
@@ -117,7 +117,7 @@ crawl_directories(struct search_context *context)
 				if (mkdir(second, DIRMASK) == -1) {
 					lock(&(context->output_lock));
 					printf("Directory %s can't be created!"
-						   "\n", second);
+						    "\n", second);
 					unlock(&(context->output_lock));
 					goto finish;
 				}
@@ -209,10 +209,10 @@ build_paths(char *rel_path, char *first, char *second,
 	/* Constructing paths */
 	first_len = strlen(first) + strlen(rel_path) + 1;
 	second_len = strlen(second) + strlen(rel_path) + 1;
-	
-	(*first_res) = calloc(first_len, sizeof(char));
-	(*second_res) = calloc(second_len, sizeof(char));
-	
+
+	(*first_res) = calloc(first_len, sizeof (char));
+	(*second_res) = calloc(second_len, sizeof (char));
+
 	if (first == NULL || second == NULL) {
 		err(1, "Error allocating memory");
 	}

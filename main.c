@@ -27,9 +27,10 @@ usage()
 	printf("dircmp.out [-s] [-w] [-tn] FIRST SECOND\n");
 	printf("FIRST ... path (full or relative) to first directory\n");
 	printf("SECOND ... path (full or relative) to second directory\n");
-	printf("-w ... compares content of regular files as well (With files)\n");
+	printf("-w ... compares content of regular files as well\n");
 	printf("-s ... synchronizes content of both files\n");
-	printf("-t ... specifies how many threads should be used for checking the file content and copying\n");
+	printf("-t ... specifies how many threads should be used for"
+		    "checking the file content and copying\n");
 }
 
 int
