@@ -57,7 +57,7 @@ You can use any combination of following optional switches:
 
  * `-w` ... compares content of regular files as well (With files)
 
- * `-s` ... synchronises content of both files
+ * `-s` ... synchronizes content of both files
  
  * `-t` ... specifies how many threads should be used for checking the file content and copying
 
