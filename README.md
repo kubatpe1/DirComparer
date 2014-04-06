@@ -92,7 +92,7 @@ During the program execution, files are compared and copied in separate threads 
 
 Number of threads that are used for file operations can be specified by a command line option `-t`. Default value is 4, minimum value is 1 (for obvious reasons). The maximum value is not specified, although there is a limit which you should never exceed - the maximum number of files that can be opened at once on your system. If you allow more threads to be used, there might be situation in which all of those threads need to open a file and some of them would fail to do so. This would lead to program failure. If you use the `-s` option, the limit should be even lower - every thread potentially requires two opened files at once.
 
-Ideal number of threads can't be recommended. It depends on the actual system, architecture, data input etc. Generally the default 4 threads seem to be working fine on most system.
+Ideal number of threads can't be recommended. It depends on the actual system, architecture, data input etc. Generally the default 4 threads seem to be working fine on most systems.
 
 
 5. Quick source code overview
@@ -102,7 +102,7 @@ Ideal number of threads can't be recommended. It depends on the actual system, a
 
 The program is implemented using producer-consumer scheme. There is one thread (the main one) crawling through the file system in folder specified by user, checking existence of the same folder structure in the other folder. Whenever a non-directory file is encountered, its path relative to the starting folder is added to the queue. It is then fetched by a consumer thread, which reconstructs both absolute paths (for file in the first folder and file in the second folder), checks, whether both exist, then checks if they are the same and copies the first one if needed. 
 
-This entire process compares uses one directory as a model and checks whether the other one is the same. In order to perform both-way check, the same comparing function is ran twice, second time using the directories swapped and avoiding checking the files which exist in both trees again.
+This entire process compares uses one directory as a model and checks whether the other one is the same. In order to perform both-way check, the same comparing function is run twice, second time using the directories swapped and avoiding checking the files which exist in both trees again.
 
 ### Source files ###
 
