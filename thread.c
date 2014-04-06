@@ -10,19 +10,20 @@
 #include "thread.h"
 #include "pthread_wrapper.h"
 
-#define BUFSIZE 25
+#define	BUFSIZE 25
 
-void *start(void *arg)
+void
+*start(void *arg)
 {
 	struct search_context *context = (struct search_context *)arg;
-	
+
 	/* Relative path to a file - gets from queue from main thread */
 	char *file;
-	
+
 	while ((file = consume(&context->q)) != NULL) {
 		compare_files(context, file);
 	}
-	
+
 	return (NULL);
 }
 
@@ -32,11 +33,13 @@ compare_files(struct search_context *context, char *file)
 	/* Complete paths to both files */
 	char *first;
 	char *second;
-		
-	/* 0 = files are similar, 1 = files are different or the other one doesn't exist */
+
+	/* 0 = files are similar, 1 = files are different 
+	 or the other one doesn't exist */
 	int different = 0;
-	
-	/* 0 = file won't be copied, 1 = file will be copied (replacing original one) 2 = file will be copied the other way */
+
+	/* 0 = file won't be copied, 1 = file will be copied 
+	 (replacing original one) 2 = file will be copied the other way */
 	int sync = 0;
 	
 	/* Structures for information about both files */
@@ -89,17 +92,21 @@ compare_files(struct search_context *context, char *file)
 			different = 1;
 			lock(&(context->output_lock));
 			printf("Files have different size:\n");
-			printf("%s - %lu\n", first, (unsigned long)first_stat.st_size);
-			printf("%s - %lu\n", second, (unsigned long)second_stat.st_size);
+			printf("%s - %lu\n", first,
+				    (unsigned long)first_stat.st_size);
+			printf("%s - %lu\n", second,
+				    (unsigned long)second_stat.st_size);
 			unlock(&(context->output_lock));
 			goto finish;
 		}
 		
 		/* 3. Type */
-		if ((first_stat.st_mode & S_IFMT) != (second_stat.st_mode & S_IFMT)) {
+		if ((first_stat.st_mode & S_IFMT) !=
+			    (second_stat.st_mode & S_IFMT)) {
 			different = 1;
 			lock(&(context->output_lock));
-			printf("Files %s and %s have different type.\n", first, second);
+			printf("Files %s and %s have different type.\n",
+				    first, second);
 			unlock(&(context->output_lock));
 			goto finish;
 		}
@@ -108,13 +115,15 @@ compare_files(struct search_context *context, char *file)
 		if (context->with_content && S_ISREG(first_stat.st_mode)) {
 			res = match_content(first, second);
 			if (res == -1) {
-				printf("Files %s and %s can't be compared.\n", first, second);
+				printf("Files %s and %s can't be compared.\n",
+					    first, second);
 				sync = 0;
 			}
 			if (!res) {
 				different = 1;
 				lock(&(context->output_lock));
-				printf("Files %s and %s have different content!\n", first, second);
+				printf("Files %s and %s have different content!\n",
+					    first, second);
 				unlock(&(context->output_lock));
 				goto finish;
 			}
@@ -128,14 +137,16 @@ finish:
 		if (sync == 1) {
 			if (copy(first, second) == -1) {
 				lock(&(context->output_lock));
-				printf("File %s can't be copied to destination %s.\n", first, second);
+				printf("File %s can't be copied to destination %s.\n",
+					    first, second);
 				unlock(&(context->output_lock));
 			}
 		}
 		else if (sync == 2) {
 			if (copy(second, first) == -1) {
 				lock(&(context->output_lock));
-				printf("File %s can't be copied to destination %s.\n", second, first);
+				printf("File %s can't be copied to destination %s.\n",
+					    second, first);
 				unlock(&(context->output_lock));
 			}
 		}
@@ -230,7 +241,8 @@ copy(char *source, char *destination)
 		return (-1);
 	}
 	
-	if ((fd2 = open(destination, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
+	if ((fd2 = open(destination, O_WRONLY | O_CREAT | O_TRUNC, 0666))
+		    == -1) {
 		warn("Error opening a file");
 		close(fd1);
 		return (-1);
