@@ -71,8 +71,17 @@ compare_files(struct search_context *context, char *file)
 		if (first_stat.st_mtime > second_stat.st_mtime) {
 			sync = 1;
 		}
-		else {
+		else if (first_stat.st_mtime < second_stat.st_mtime) {
 			sync = 2;
+		}
+		else {
+			/* Both files have the same date */
+			if (first_stat.st_size >= second_stat.st_size) {
+				sync = 1;
+			}
+			else {
+				sync = 2;
+			}
 		}
 		
 		/* 2. Size */
