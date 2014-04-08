@@ -13,7 +13,7 @@
 #include "prod_con.h"
 
 /* Spawns all the consumer threads */
-void
+static void
 spawn_threads(int n, pthread_t *buffer, struct search_context *context)
 {
 	int i, e;
@@ -53,7 +53,7 @@ build_path(char *rel_path, char *path_base, int include_slash)
 }
 
 /* Crawls the directory tree and adds all non-directory files to queue */
-void
+static void
 crawl_directories(struct search_context *context)
 {
 	/* Stack for directories to crawl through */

@@ -21,7 +21,7 @@
 
 
 /* Prints the program usage */
-void
+static void
 usage()
 {
 	printf("Usage:\n");

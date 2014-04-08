@@ -13,7 +13,7 @@
 #define	BUFSIZE 25
 
 /* Copies the source file to destination, overwrites if already exists */
-int
+static int
 copy(char *source, char *destination)
 {
 	/* Buffer for storing content */
@@ -68,7 +68,7 @@ copy(char *source, char *destination)
 
 /* Compares content of two files, byte by byte */
 /* Returns 1 if equal, 0 if different, or -1 in case of error */
-int
+static int
 match_content(char *first, char *second)
 {
 	/* Buffers for storing content */
@@ -132,7 +132,7 @@ match_content(char *first, char *second)
 }
 
 /* Performs file comparing and copying */
-void
+static void
 compare_files(struct search_context *context, char *file)
 {
 	/* Complete paths to both files */
