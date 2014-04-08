@@ -25,14 +25,7 @@ struct search_context {
 /* Performs the search with specified parameters */
 int search(char *src, char *dst, int with_content, int sync, int thread_num);
 
-/* Spawns all the consumer threads */
-void spawn_threads(int n, pthread_t *buffer, struct search_context *context);
-
-/* Crawls the directory tree and adds all non-directory files to queue */
-void crawl_directories(struct search_context *context);
-
-/* Builds two paths by concatenating strings, user has to free the memory himself */
-void build_paths(char *rel_path, char *first, char *second, char **first_res, char **second_res);
-
+/* Builds path by concatenating strings, user has to free the memory himself */
+char *build_path(char *rel_path, char *path_base, int include_slash);
 
 #endif /* SEARCH_H */

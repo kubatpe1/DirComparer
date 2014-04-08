@@ -15,6 +15,7 @@
 #include "prod_con.h"
 
 #define	THREADCOUNT 4
+#define THREADMAX 25
 
 #define	OPTSTR "wst:"
 
@@ -55,13 +56,14 @@ main(int argc, char **argv)
 				with_content = 1;
 				break;
 			case 't':
-				thread_count = atoi(optarg);
-				if (thread_count == 0) {
+				thread_count = strtol(optarg, NULL, 0);
+				if (thread_count <= 0 || thread_count > THREADMAX) {
+					fprintf(stderr, "Invalid value for thread count: %d, using default value %d\n", thread_count, THREADCOUNT);
 					thread_count = THREADCOUNT;
 				}
 				break;
 			case '?':
-				printf("Unknown option: %c\n", optopt);
+				fprintf(stderr, "Unknown option: %c\n", optopt);
 				usage();
 				return (1);
 		}
@@ -71,7 +73,7 @@ main(int argc, char **argv)
 	argv = argv + optind;
 
 	if ((argc - optind) != 2) {
-		printf("Invalid number of arguments\n");
+		fprintf(stderr, "Invalid number of arguments\n");
 		usage();
 		return (1);
 	}
@@ -88,15 +90,11 @@ main(int argc, char **argv)
 	res = res1 || res2;
 
 	/* Final report */
-	if (!res) {
-		printf("Directories %s and %s have similar content.\n",
-			    src, dst);
-	} else {
+	if (res) {
 		printf("Directories %s and %s have different content.\n",
 			    src, dst);
 		if (sync) {
-			printf("Content of %s was "
-				    "synchronized with content of %s.\n",
+			printf("Content of folders %s and %s was synchronized.\n",
 				    dst, src);
 		}
 	}
