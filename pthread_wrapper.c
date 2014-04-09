@@ -5,7 +5,7 @@
 #include "pthread_wrapper.h"
 
 void
-cond_init(pthread_cond_t *c)
+pthread_cond_init_checked(pthread_cond_t *c)
 {
 	int e;
 
@@ -15,7 +15,7 @@ cond_init(pthread_cond_t *c)
 
 
 void
-cond_destroy(pthread_cond_t *c)
+pthread_cond_destroy_checked(pthread_cond_t *c)
 {
 
 	int e;
@@ -25,7 +25,7 @@ cond_destroy(pthread_cond_t *c)
 
 
 void
-mutex_init(pthread_mutex_t *m)
+pthread_mutex_init_checked(pthread_mutex_t *m)
 {
 	int e;
 
@@ -35,7 +35,7 @@ mutex_init(pthread_mutex_t *m)
 
 
 void
-mutex_destroy(pthread_mutex_t *m)
+pthread_mutex_destroy_checked(pthread_mutex_t *m)
 {
 	int e;
 	if ((e = pthread_mutex_destroy(m)) != 0)
@@ -43,7 +43,7 @@ mutex_destroy(pthread_mutex_t *m)
 }
 
 void
-lock(pthread_mutex_t *m)
+pthread_lock_checked(pthread_mutex_t *m)
 {
 	int e;
 
@@ -52,7 +52,7 @@ lock(pthread_mutex_t *m)
 }
 
 void
-unlock(pthread_mutex_t *m)
+pthread_unlock_checked(pthread_mutex_t *m)
 {
 	int e;
 
@@ -61,7 +61,7 @@ unlock(pthread_mutex_t *m)
 }
 
 void
-thread_wait(pthread_cond_t *c, pthread_mutex_t *m)
+pthread_wait_checked(pthread_cond_t *c, pthread_mutex_t *m)
 {
 	int e;
 
@@ -70,7 +70,7 @@ thread_wait(pthread_cond_t *c, pthread_mutex_t *m)
 }
 
 void
-thread_signal(pthread_cond_t *c)
+pthread_signal_checked(pthread_cond_t *c)
 {
 	int e;
 
@@ -79,7 +79,7 @@ thread_signal(pthread_cond_t *c)
 }
 
 void
-thread_broadcast(pthread_cond_t *c)
+pthread_broadcast_checked(pthread_cond_t *c)
 {
 	int e;
 

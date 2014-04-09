@@ -94,16 +94,16 @@ crawl_directories(struct search_context *context)
 		if ((stat(second, &buf) == -1) || (!S_ISDIR(buf.st_mode))) {
 			/* Directory doesn't exist in the other tree */
 			context->result = 1;
-			lock(&(context->output_lock));
+			pthread_lock_checked(&(context->output_lock));
 			printf("Directory %s doesn't exist!\n", second);
-			unlock(&(context->output_lock));
+			pthread_unlock_checked(&(context->output_lock));
 			/* Creating the directory */
 			if (context->sync) {
 				if (mkdir(second, DIRMASK) == -1) {
-					lock(&(context->output_lock));
+					pthread_lock_checked(&(context->output_lock));
 					printf("Directory %s can't be created!"
 						   "\n", second);
-					unlock(&(context->output_lock));
+					pthread_unlock_checked(&(context->output_lock));
 					goto finish;
 				}
 				/* Directory succesfully created */
@@ -114,10 +114,10 @@ crawl_directories(struct search_context *context)
 		
 		/* Directory can't be opened */
 		if ((d = opendir(first)) == NULL) {
-			lock(&(context->output_lock));
+			pthread_lock_checked(&(context->output_lock));
 			fprintf(stderr, "Error opening the directory: "
 				    "%s\n", current);
-			unlock(&(context->output_lock));
+			pthread_unlock_checked(&(context->output_lock));
 			
 			exit(1);
 		}
@@ -140,10 +140,10 @@ crawl_directories(struct search_context *context)
 			
 			/* Reading file stats */
 			if (stat(first, &buf) == -1) {
-				lock(&(context->output_lock));
+				pthread_lock_checked(&(context->output_lock));
 				fprintf(stderr, "Error reading the file "
 					    "stats: %s\n", first);
-				unlock(&(context->output_lock));
+				pthread_unlock_checked(&(context->output_lock));
 				
 				free(path);
 				continue;
@@ -161,9 +161,9 @@ crawl_directories(struct search_context *context)
 		}
 		
 		if (closedir(d) == -1) {
-			lock(&(context->output_lock));
+			pthread_lock_checked(&(context->output_lock));
 			fprintf(stderr, "Error closing the directory!\n");
-			unlock(&(context->output_lock));
+			pthread_unlock_checked(&(context->output_lock));
 			
 			exit(1);
 		}
@@ -198,7 +198,7 @@ search(char *src, char *dst, int with_content, int sync, int thread_num)
 	context.with_content = with_content;
 	context.sync = sync;
 	init_queue(&(context.q));
-	mutex_init(&(context.output_lock));
+	pthread_mutex_init_checked(&(context.output_lock));
 
 	thread_ids = malloc(sizeof (pthread_t) * thread_num);
 
@@ -216,7 +216,7 @@ search(char *src, char *dst, int with_content, int sync, int thread_num)
 	}
 
 	/* Cleanup */
-	mutex_destroy(&(context.output_lock));
+	pthread_mutex_destroy_checked(&(context.output_lock));
 
 	return (context.result);
 }

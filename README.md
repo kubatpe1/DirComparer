@@ -74,7 +74,7 @@ If `-s` option is used, content of both directories is changed to match the othe
 
     dircmp.out /dir1 /dir2
 
-Compares just the directory structure and names of files included in them. Does not check sizes, types or actual content of files.
+Compares just the directory structure, names and types of files. Does not check sizes or actual content of files.
 
     dircmp.out -w /dir1 /dir2
 
@@ -86,7 +86,7 @@ Compares directory structure. If any directories or files don't have their count
 
     dircmp.out -w -s /dir1 /dir2
 
-Compares directory structure and file content. In addition to previous scenario, if a file from /dir1 has its counterpart in /dir2 with different content, the older file is replaced with the newer one.
+Compares directory structure and file content. In addition to previous scenario, if a file from /dir1 has its counterpart in /dir2 with different content, the older file is replaced with the newer one (more detailed rules in the section above).
 
     dircmp -s /dir1 /newdir
 
@@ -98,7 +98,7 @@ If newdir doesn't exist, copies dir1 recursively with its content.
 
 During the program execution, files are compared and copied in separate threads that are independent on the main thread apart from being served the file names. This can be a fine performance boost especially for a directory trees with significant number of larger files.
 
-Number of threads that are used for file operations can be specified by a command line option `-t`. Default value is 4, minimum value is 1 (for obvious reasons). The maximum value is not specified, although there is a limit which you should never exceed - the maximum number of files that can be opened at once on your system. If you allow more threads to be used, there might be situation in which all of those threads need to open a file and some of them would fail to do so. This would lead to program failure. If you use the `-s` option, the limit should be even lower - every thread potentially requires two opened files at once.
+Number of threads that are used for file operations can be specified by a command line option `-t`. Default value is 4, minimum value is 1 (for obvious reasons), maximum value is currently set to 25. The number should never exceed the limit of files that can be opened on your system at once. If you allow more threads to be used, there might be situation in which all of those threads need to open a file and some of them would fail to do so. This would lead to program failure. If you use the `-s` option, the limit should be even lower - every thread potentially requires two opened files at once.
 
 Ideal number of threads can't be recommended. It depends on the actual system, architecture, data input etc. Generally the default 4 threads seem to be working fine on most systems.
 

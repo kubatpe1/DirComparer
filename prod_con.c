@@ -6,38 +6,38 @@ init_queue(struct queue *q)
 {
 	q->start_pos = 0;
 	q->queue_size = 0;
-	mutex_init(&(q->m));
-	cond_init(&(q->c_prod));
-	cond_init(&(q->c_cons));
+	pthread_mutex_init_checked(&(q->m));
+	pthread_cond_init_checked(&(q->c_prod));
+	pthread_cond_init_checked(&(q->c_cons));
 }
 
 void
 delete_queue(struct queue *q)
 {
-	mutex_destroy(&(q->m));
-	cond_destroy(&(q->c_prod));
-	cond_destroy(&(q->c_cons));
+	pthread_mutex_destroy_checked(&(q->m));
+	pthread_cond_destroy_checked(&(q->c_prod));
+	pthread_cond_destroy_checked(&(q->c_cons));
 }
 
 void
 produce(struct queue *q, void *item)
 {
 	/* Lock */
-	lock(&(q->m));
+	pthread_lock_checked(&(q->m));
 
 	/* Queue is full */
 	while (q->queue_size == QUEUE_MAX) {
 		/* Conditional wait */
-		thread_wait(&(q->c_prod), &(q->m));
+		pthread_wait_checked(&(q->c_prod), &(q->m));
 	}
 
 	/* Add the item to the queue */
 	q->data[(q->start_pos + q->queue_size) % QUEUE_MAX] = item;
 	q->queue_size++;
 
-	thread_broadcast(&(q->c_cons));
+	pthread_broadcast_checked(&(q->c_cons));
 
-	unlock(&(q->m));
+	pthread_unlock_checked(&(q->m));
 }
 
 void
@@ -46,11 +46,11 @@ void
 	void *result;
 
 	/* Lock */
-	lock(&(q->m));
+	pthread_lock_checked(&(q->m));
 
 	/* Queue is empty */
 	while (q->queue_size <= 0) {
-		thread_wait(&(q->c_cons), &(q->m));
+		pthread_wait_checked(&(q->c_cons), &(q->m));
 	}
 
 	/* Fetch the item from the queue */
@@ -64,10 +64,10 @@ void
 		q->queue_size--;
 
 		/* Wake up the producer, there is free space */
-		thread_signal(&(q->c_prod));
+		pthread_signal_checked(&(q->c_prod));
 	}
 
-	unlock(&(q->m));
+	pthread_unlock_checked(&(q->m));
 
 	return (result);
 }

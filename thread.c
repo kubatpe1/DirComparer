@@ -171,10 +171,20 @@ compare_files(struct search_context *context, char *file)
 		second_exists = 0;
 		different = 1;
 		sync = 1;
-		lock(&(context->output_lock));
+		pthread_lock_checked(&(context->output_lock));
 		printf("File %s: doesn't exist!\n", second);
-		unlock(&(context->output_lock));
+		pthread_unlock_checked(&(context->output_lock));
 		goto finish;
+	}
+	
+	/* 2. Type */
+	if ((first_stat.st_mode & S_IFMT) !=
+		(second_stat.st_mode & S_IFMT)) {
+		different = 1;
+		pthread_lock_checked(&(context->output_lock));
+		printf("Files %s and %s have different type.\n",
+			   first, second);
+		pthread_unlock_checked(&(context->output_lock));
 	}
 	
 	if (context->with_content) {
@@ -192,27 +202,21 @@ compare_files(struct search_context *context, char *file)
 			}
 		}
 		
-		/* 2. Size */
+		if (different)
+		{
+			goto finish;
+		}
+		
+		/* 3. Size */
 		if (first_stat.st_size != second_stat.st_size) {
 			different = 1;
-			lock(&(context->output_lock));
+			pthread_lock_checked(&(context->output_lock));
 			printf("Files have different size:\n");
 			printf("%s - %lu\n", first,
 				   (unsigned long)first_stat.st_size);
 			printf("%s - %lu\n", second,
 				   (unsigned long)second_stat.st_size);
-			unlock(&(context->output_lock));
-			goto finish;
-		}
-		
-		/* 3. Type */
-		if ((first_stat.st_mode & S_IFMT) !=
-			(second_stat.st_mode & S_IFMT)) {
-			different = 1;
-			lock(&(context->output_lock));
-			printf("Files %s and %s have different type.\n",
-				   first, second);
-			unlock(&(context->output_lock));
+			pthread_unlock_checked(&(context->output_lock));
 			goto finish;
 		}
 		
@@ -226,10 +230,10 @@ compare_files(struct search_context *context, char *file)
 			}
 			if (!res) {
 				different = 1;
-				lock(&(context->output_lock));
+				pthread_lock_checked(&(context->output_lock));
 				printf("Files %s and %s have different content!\n",
 					   first, second);
-				unlock(&(context->output_lock));
+				pthread_unlock_checked(&(context->output_lock));
 				goto finish;
 			}
 		}
@@ -239,23 +243,23 @@ finish:
 	/* Optional - copy */
 	if (different && context->sync) {
 		if ((!S_ISREG(first_stat.st_mode)) || (second_exists && !S_ISREG(second_stat.st_mode))) {
-			lock(&(context->output_lock));
+			pthread_lock_checked(&(context->output_lock));
 			printf("Files %s and %s can't be synchronized.\n",
 				   first, second);
-			unlock(&(context->output_lock));
+			pthread_unlock_checked(&(context->output_lock));
 		} else if (sync == 1) {
 			if (copy(first, second) == -1) {
-				lock(&(context->output_lock));
+				pthread_lock_checked(&(context->output_lock));
 				printf("File %s can't be copied to destination %s.\n",
 					   first, second);
-				unlock(&(context->output_lock));
+				pthread_unlock_checked(&(context->output_lock));
 			}
 		} else if (sync == 2) {
 			if (copy(second, first) == -1) {
-				lock(&(context->output_lock));
+				pthread_lock_checked(&(context->output_lock));
 				printf("File %s can't be copied to destination %s.\n",
 					   second, first);
-				unlock(&(context->output_lock));
+				pthread_unlock_checked(&(context->output_lock));
 			}
 		}
 	}
