@@ -1,5 +1,5 @@
 #ifndef STRINGSTACK_H
-#define STRINGSTACK_H
+#define	STRINGSTACK_H
 
 /* Structure for storing the stack data */
 struct stack {

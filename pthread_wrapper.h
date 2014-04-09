@@ -1,5 +1,5 @@
 #ifndef PTHREAD_WRAPPER
-#define PTHREAD_WRAPPER
+#define	PTHREAD_WRAPPER
 
 #include <pthread.h>
 

@@ -17,10 +17,10 @@ static void
 spawn_threads(int n, pthread_t *buffer, struct search_context *context)
 {
 	int i, e;
-	
+
 	for (i = 0; i < n; i++) {
 		if ((e = pthread_create(buffer + i,
-								NULL, start, (void*)context)) != 0) {
+		    NULL, start, (void*)context)) != 0) {
 			fprintf(stderr, "Error creating thread!\n");
 			exit(1);
 		}
@@ -31,25 +31,26 @@ spawn_threads(int n, pthread_t *buffer, struct search_context *context)
 char *
 build_path(char *rel_path, char *path_base, int include_slash)
 {
-	int len = strlen(path_base) + strlen(rel_path) + (include_slash ? 2 : 1);
-	
+	int len = strlen(path_base) + strlen(rel_path)
+	    + (include_slash ? 2 : 1);
+
 	char *result = calloc(len, sizeof (char));
-	
+
 	if (result == NULL) {
 		err(1, "Error allocating memory");
 	}
-	
+
 	strncpy(result, path_base, strlen(path_base));
-	
+
 	if (include_slash) {
 		strncpy(result + strlen(path_base), "/", 1);
-		strncpy(result + strlen(path_base) + 1, rel_path, strlen(rel_path));
-	}
-	else {
+		strncpy(result + strlen(path_base) + 1,
+		    rel_path, strlen(rel_path));
+	} else {
 		strncpy(result + strlen(path_base), rel_path, strlen(rel_path));
 	}
-	
-	return result;
+
+	return (result);
 }
 
 /* Crawls the directory tree and adds all non-directory files to queue */
@@ -58,31 +59,30 @@ crawl_directories(struct search_context *context)
 {
 	/* Stack for directories to crawl through */
 	struct stack st;
-	
+
 	/* Directory and its entries */
 	DIR *d;
 	struct dirent *de;
-	
+
 	char *current, *path;
-	
+
 	/* Full directory paths */
 	char *first, *second;
-	
+
 	char *empty = "";
-	
+
 	/* File stat structure */
 	struct stat buf;
-	
+
 	/* Initialize the stack with an empty directory */
 	stack_init(&st, STACKSIZE);
 	stack_push(&st, empty);
-	
+
 	while ((current = stack_pop(&st)) != NULL) {
-		
 		/* Rebuilding the paths */
 		first = build_path(current, context->source, 0);
 		second = build_path(current, context->target, 0);
-		
+
 		/* Ensuring that both exist and are directories */
 		if ((stat(first, &buf) == -1) || !S_ISDIR(buf.st_mode)) {
 			/* File either doesn't exist, or is not a directory */
@@ -90,7 +90,7 @@ crawl_directories(struct search_context *context)
 			context->result = 1;
 			goto finish;
 		}
-		
+
 		if ((stat(second, &buf) == -1) || (!S_ISDIR(buf.st_mode))) {
 			/* Directory doesn't exist in the other tree */
 			context->result = 1;
@@ -100,10 +100,12 @@ crawl_directories(struct search_context *context)
 			/* Creating the directory */
 			if (context->sync) {
 				if (mkdir(second, DIRMASK) == -1) {
-					pthread_lock_checked(&(context->output_lock));
+					pthread_lock_checked(
+					    &(context->output_lock));
 					printf("Directory %s can't be created!"
-						   "\n", second);
-					pthread_unlock_checked(&(context->output_lock));
+					    "\n", second);
+					pthread_unlock_checked(
+					    &(context->output_lock));
 					goto finish;
 				}
 				/* Directory succesfully created */
@@ -111,44 +113,44 @@ crawl_directories(struct search_context *context)
 			/* If we don't create the directory, we just skip it */
 			else goto finish;
 		}
-		
+
 		/* Directory can't be opened */
 		if ((d = opendir(first)) == NULL) {
 			pthread_lock_checked(&(context->output_lock));
 			fprintf(stderr, "Error opening the directory: "
 				    "%s\n", current);
 			pthread_unlock_checked(&(context->output_lock));
-			
+
 			exit(1);
 		}
-		
+
 		while ((de = readdir(d)) != NULL) {
 			/* Excluding loopback hardlinks */
 			if ((strcmp(de->d_name, ".") == 0) ||
 				(strcmp(de->d_name, "..") == 0)) {
 				continue;
 			}
-			
+
 			/* Constructing new relative path */
 			path = build_path(de->d_name, current, 1);
-			
+
 			/* Constructing absolute paths */
 			free(first);
 			free(second);
 			first = build_path(path, context->source, 0);
 			second = build_path(path, context->target, 0);
-			
+
 			/* Reading file stats */
 			if (stat(first, &buf) == -1) {
 				pthread_lock_checked(&(context->output_lock));
 				fprintf(stderr, "Error reading the file "
 					    "stats: %s\n", first);
 				pthread_unlock_checked(&(context->output_lock));
-				
+
 				free(path);
 				continue;
 			}
-			
+
 			/* Directory - add to crawling stack */
 			if (S_ISDIR(buf.st_mode)) {
 				stack_push(&st, path);
@@ -159,15 +161,15 @@ crawl_directories(struct search_context *context)
 				produce(&(context->q), path);
 			}
 		}
-		
+
 		if (closedir(d) == -1) {
 			pthread_lock_checked(&(context->output_lock));
 			fprintf(stderr, "Error closing the directory!\n");
 			pthread_unlock_checked(&(context->output_lock));
-			
+
 			exit(1);
 		}
-		
+
 		/* Final deallocation block */
 	finish:
 		free(first);
@@ -176,12 +178,13 @@ crawl_directories(struct search_context *context)
 			free(current);
 		}
 	}
-	
+
 	stack_delete(&st);
 }
 
 int
-search(char *src, char *dst, int with_content, int with_type, int sync, int thread_num)
+search(char *src, char *dst, int with_content,
+    int with_type, int sync, int thread_num)
 {
 	/* Search context structure accessed by all the threads */
 	struct search_context context;

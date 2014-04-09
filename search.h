@@ -1,15 +1,15 @@
 #ifndef SEARCH_H
-#define SEARCH_H
+#define	SEARCH_H
 
 #include <pthread.h>
 
 #include "prod_con.h"
 
 /* Starting size of the string stack for crawl function */
-#define STACKSIZE 25
+#define	STACKSIZE 25
 
 /* Mask for directory creation */
-#define DIRMASK 0777
+#define	DIRMASK 0777
 
 /* Structure defining search context and parameters */
 struct search_context {
@@ -24,7 +24,8 @@ struct search_context {
 };
 
 /* Performs the search with specified parameters */
-int search(char *src, char *dst, int with_content, int with_type, int sync, int thread_num);
+int search(char *src, char *dst, int with_content,
+    int with_type, int sync, int thread_num);
 
 /* Builds path by concatenating strings, user has to free the memory himself */
 char *build_path(char *rel_path, char *path_base, int include_slash);

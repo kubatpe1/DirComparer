@@ -43,7 +43,8 @@ stack_push(struct stack *stack, char *item)
 	if (stack->top >= stack->size - 1) {
 		stack->size += STEP;
 		printf("Realloc with %d\n", stack->size);
-		stack->data = realloc((void *)(stack->data), stack->size * sizeof (char *));
+		stack->data = realloc((void *)(stack->data),
+		    stack->size * sizeof (char *));
 		if (stack->data == NULL) {
 			fprintf(stderr, "Error allocating the memory!\n");
 			exit(1);

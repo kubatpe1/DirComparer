@@ -15,14 +15,14 @@
 #include "prod_con.h"
 
 #define	THREADCOUNT 4
-#define THREADMAX 25
+#define	THREADMAX 25
 
 #define	OPTSTR "wst:"
 
 
 /* Prints the program usage */
 static void
-usage()
+	usage()
 {
 	printf("Usage:\n");
 	printf("dircmp.out [-s] [-w] [-tn] FIRST SECOND\n");
@@ -57,8 +57,12 @@ main(int argc, char **argv)
 				break;
 			case 't':
 				thread_count = strtol(optarg, NULL, 0);
-				if (thread_count <= 0 || thread_count > THREADMAX) {
-					fprintf(stderr, "Invalid value for thread count: %d, using default value %d\n", thread_count, THREADCOUNT);
+				if (thread_count <= 0 ||
+				    thread_count > THREADMAX) {
+					fprintf(stderr, "Invalid value"
+					    " for thread count: %d, using"
+					    " default value %d\n",
+					    thread_count, THREADCOUNT);
 					thread_count = THREADCOUNT;
 				}
 				break;
@@ -94,8 +98,8 @@ main(int argc, char **argv)
 		printf("Directories %s and %s have different content.\n",
 			    src, dst);
 		if (sync) {
-			printf("Content of folders %s and %s was synchronized.\n",
-				    dst, src);
+			printf("Content of folders %s and %s was"
+			    " synchronized.\n", dst, src);
 		}
 	}
 
