@@ -18,12 +18,13 @@ struct search_context {
 	char *source;
 	char *target;
 	int with_content;
+	int with_type;
 	int sync;
 	pthread_mutex_t output_lock;
 };
 
 /* Performs the search with specified parameters */
-int search(char *src, char *dst, int with_content, int sync, int thread_num);
+int search(char *src, char *dst, int with_content, int with_type, int sync, int thread_num);
 
 /* Builds path by concatenating strings, user has to free the memory himself */
 char *build_path(char *rel_path, char *path_base, int include_slash);

@@ -83,8 +83,8 @@ main(int argc, char **argv)
 
 	/* Performing the search */
 	/* each search is one-directional */
-	res1 = search(src, dst, with_content, sync, thread_count);
-	res2 = search(dst, src, 0, sync, thread_count);
+	res1 = search(src, dst, with_content, 1, sync, thread_count);
+	res2 = search(dst, src, 0, 0, sync, thread_count);
 
 	/* Merging results of both searches */
 	res = res1 || res2;

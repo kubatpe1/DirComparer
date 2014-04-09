@@ -181,7 +181,7 @@ crawl_directories(struct search_context *context)
 }
 
 int
-search(char *src, char *dst, int with_content, int sync, int thread_num)
+search(char *src, char *dst, int with_content, int with_type, int sync, int thread_num)
 {
 	/* Search context structure accessed by all the threads */
 	struct search_context context;
@@ -196,6 +196,7 @@ search(char *src, char *dst, int with_content, int sync, int thread_num)
 	context.source = src;
 	context.target = dst;
 	context.with_content = with_content;
+	context.with_type = with_type;
 	context.sync = sync;
 	init_queue(&(context.q));
 	pthread_mutex_init_checked(&(context.output_lock));

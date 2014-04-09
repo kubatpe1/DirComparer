@@ -178,13 +178,15 @@ compare_files(struct search_context *context, char *file)
 	}
 	
 	/* 2. Type */
-	if ((first_stat.st_mode & S_IFMT) !=
-		(second_stat.st_mode & S_IFMT)) {
-		different = 1;
-		pthread_lock_checked(&(context->output_lock));
-		printf("Files %s and %s have different type.\n",
-			   first, second);
-		pthread_unlock_checked(&(context->output_lock));
+	if (context->with_type) {
+		if ((first_stat.st_mode & S_IFMT) !=
+			(second_stat.st_mode & S_IFMT)) {
+			different = 1;
+			pthread_lock_checked(&(context->output_lock));
+			printf("Files %s and %s have different type.\n",
+				   first, second);
+			pthread_unlock_checked(&(context->output_lock));
+		}
 	}
 	
 	if (context->with_content) {
